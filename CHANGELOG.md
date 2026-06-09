@@ -14,6 +14,7 @@ and this project aims to follow [Semantic Versioning](https://semver.org/spec/v2
 - Design system: indigo-violet brand, semantic colors, type ramp, components,
   motion guide (light + dark).
 - Command palette (⌘K) and light/dark toggle.
+- First-launch **Mole engine (CLI) setup** — detects a missing engine and installs it with one click, plus Download / copy-command fallbacks and a demo mode.
 
 ### Known limitations
 - No real system integration yet — all scans/cleans are simulated.

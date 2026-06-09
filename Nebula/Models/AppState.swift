@@ -33,6 +33,58 @@ final class AppState {
         withAnimation(Motion.smooth) { appearance = (appearance == .light) ? .dark : .light }
     }
 
+    // MARK: Mole engine (CLI) status
+    //
+    // The app is a front-end for the Mole command-line engine. On first launch
+    // we detect whether it's installed; if not, the CLI setup screen guides the
+    // user to install it with one click before the workspace appears.
+    enum CLIState: Equatable { case checking, missing, installing, installed }
+    var cliState: CLIState = .checking
+    /// Live output from the installer.
+    var installLog = ""
+    /// Set when an automatic install attempt failed (e.g. Homebrew missing).
+    var installFailed = false
+    /// Lets the user explore the UI on mock data without the engine present.
+    var cliDemoMode = false
+    var cliReady: Bool {
+        if case .installed = cliState { return true }
+        return cliDemoMode
+    }
+
+    /// Detects a real `mo` install on a background queue. Because this checks
+    /// the actual system, an already-installed engine is found on every launch
+    /// and the setup screen never reappears.
+    func checkCLI() {
+        cliState = .checking
+        DispatchQueue.global(qos: .userInitiated).async {
+            let found = MoleCLI.isInstalled()
+            DispatchQueue.main.async {
+                withAnimation(Motion.smooth) { self.cliState = found ? .installed : .missing }
+            }
+        }
+    }
+
+    /// Installs the engine for real via Homebrew. On success the install
+    /// persists, so subsequent launches skip the setup screen.
+    func installCLI() {
+        installFailed = false
+        installLog = "Starting install…"
+        cliState = .installing
+        DispatchQueue.global(qos: .userInitiated).async {
+            let ok = MoleCLI.runInstall { line in self.installLog = line }
+            DispatchQueue.main.async {
+                withAnimation(Motion.smooth) {
+                    if ok {
+                        self.cliState = .installed
+                    } else {
+                        self.cliState = .missing
+                        self.installFailed = true
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: Health
     /// 0...100 system health. Recomputed after clean/optimize.
     var healthScore: Int = 92

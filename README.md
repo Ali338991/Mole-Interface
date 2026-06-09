@@ -43,8 +43,19 @@ Mole ships with a complete, documented design system — indigo-violet brand, Ap
 ## Requirements
 
 - macOS 15 (Sequoia) or later
-- Xcode 16 or later
-- No third-party dependencies (SwiftUI, Swift Charts, Observation)
+- Xcode 16 or later (to build from source)
+- No third-party Swift dependencies (SwiftUI, Swift Charts, Observation)
+
+> **No manual prerequisites.** Mole's app is a front-end for the open-source [Mole engine (CLI)](https://github.com/tw93/mole). You don't need to install it beforehand — on first launch the app detects whether the engine is present and, if not, installs it for you with **one click** (with *Download from GitHub* and *copy command* fallbacks). See [The Mole engine](#the-mole-engine).
+
+## The Mole engine
+
+The app needs the Mole command-line engine to perform real operations. The first time you open Mole, it runs a quick check:
+
+- **Engine found** → you go straight to the dashboard.
+- **Engine missing** → the **Install the Mole engine** screen appears. Tap **Install Mole engine** and Mole sets it up — no Terminal needed. Prefer to do it yourself? Use **Download from GitHub** or **Copy Homebrew command**.
+
+You can also tap **Continue in demo mode** to explore the interface on mock data without the engine. The install command and detection paths live in [`Nebula/Models/MoleCLI.swift`](Nebula/Models/MoleCLI.swift) — update them to match the engine's official distribution.
 
 ## Build & run
 
@@ -61,7 +72,8 @@ Then press **▶ (⌘R)** in Xcode. On first launch you'll see a short onboardin
 Everything below runs on **safe mock data** — nothing on your disk is touched yet.
 
 1. **Onboarding** — on first launch, step through the welcome screens and tap *Run first scan* (or *Skip*).
-2. **Dashboard** — read your health score and pick one of the recommended actions, or jump anywhere from the sidebar.
+2. **Install the engine** — if the Mole engine isn't found, tap **Install Mole engine** (one click) on the setup screen. Once it's ready, the app continues automatically. (Or *Continue in demo mode* to just explore the UI.)
+3. **Dashboard** — read your health score and pick one of the recommended actions, or jump anywhere from the sidebar.
 3. **Switch screens** — use the **sidebar** on the left, or press **⌘K** to open the command palette and jump/act instantly.
 4. **Smart Clean** — review categories grouped by safety, toggle what to remove, flip **Dry run** to preview, then **Review & Clean** (a confirm sheet shows what goes to Trash vs. permanent).
 5. **Applications** — search/filter apps, select one to see its size, related files, and uninstall-confidence, then **Uninstall** for a complete removal.

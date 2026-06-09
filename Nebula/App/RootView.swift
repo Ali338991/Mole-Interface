@@ -10,15 +10,19 @@ struct RootView: View {
 
     var body: some View {
         Group {
-            if app.hasCompletedOnboarding {
+            if !app.hasCompletedOnboarding {
+                OnboardingView()
+                    .transition(.opacity)
+            } else if app.cliReady {
                 workspace
             } else {
-                OnboardingView()
+                CLISetupView()
                     .transition(.opacity)
             }
         }
         .preferredColorScheme(app.appearance)
         .animation(Motion.snappy, value: app.hasCompletedOnboarding)
+        .animation(Motion.snappy, value: app.cliReady)
     }
 
     private var workspace: some View {
