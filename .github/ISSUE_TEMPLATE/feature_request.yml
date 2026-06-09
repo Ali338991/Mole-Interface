@@ -1,0 +1,36 @@
+name: "✨ Feature request"
+description: Suggest an idea or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to do that's hard or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Dashboard
+        - Smart Clean
+        - Applications
+        - Disk Analyzer
+        - System Monitor
+        - Developer Cleanup
+        - Optimize
+        - Settings / Menu bar
+        - Design system
+        - Other
