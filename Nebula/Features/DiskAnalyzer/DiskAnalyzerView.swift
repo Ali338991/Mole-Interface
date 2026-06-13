@@ -7,6 +7,7 @@ import SwiftUI
 import Charts
 
 struct DiskAnalyzerView: View {
+    @Environment(AppState.self) private var app
     @State private var mode: ViewMode = .treemap
     @State private var path: [DiskNode] = []
     @State private var selectedFiles: Set<UUID> = []
@@ -44,9 +45,9 @@ struct DiskAnalyzerView: View {
     @ViewBuilder private var content: some View {
         switch mode {
         case .treemap:
-            TreemapView(root: MockData.diskRoot, path: $path)
+            TreemapView(root: app.diskRoot, path: $path)
         case .sunburst:
-            SunburstView(node: path.last ?? MockData.diskRoot)
+            SunburstView(node: path.last ?? app.diskRoot)
                 .glassCard()
         case .largest:
             largestFiles
@@ -59,7 +60,7 @@ struct DiskAnalyzerView: View {
 
     private var largestFiles: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Table(MockData.largeFiles) {
+            Table(app.largeFiles) {
                 TableColumn("Name") { f in
                     HStack(spacing: Spacing.sm) {
                         Circle().fill(f.kind.color).frame(width: 8, height: 8)
@@ -95,7 +96,7 @@ struct DiskAnalyzerView: View {
     private var timeline: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             SectionHeader("Storage by age", subtitle: "Large items you haven't touched in a while")
-            Chart(MockData.largeFiles) { f in
+            Chart(app.largeFiles) { f in
                 PointMark(
                     x: .value("Age (days)", Int(Date().timeIntervalSince(f.modified) / 86_400)),
                     y: .value("Size (GB)", Double(f.bytes) / 1_000_000_000)

@@ -13,7 +13,20 @@ A SwiftUI reimagining of the open-source [Mole](https://github.com/tw93/mole) CL
 [![CI](https://github.com/Ali338991/Mole-Interface/actions/workflows/ci.yml/badge.svg)](https://github.com/Ali338991/Mole-Interface/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+### [⬇️ Download Mole.dmg](https://drive.google.com/file/d/16bb-tmA4aALgcLyjwZgdEDK3lQr6M3FS/view?usp=sharing)
+
 </div>
+
+---
+
+## Download
+
+Grab the prebuilt app: **[Download Mole.dmg](https://drive.google.com/file/d/16bb-tmA4aALgcLyjwZgdEDK3lQr6M3FS/view?usp=sharing)**
+
+1. Open the `.dmg` and drag **Mole** into **Applications**.
+2. The first time you open it, the build is unsigned, so macOS will warn that it "cannot be checked for malware." This is expected for a free open-source app — **right-click the app → Open → Open** (you only need to do this once).
+
+Prefer to build it yourself? See [Build & run](#build--run).
 
 ---
 

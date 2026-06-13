@@ -26,7 +26,7 @@ struct ApplicationsView: View {
     }
 
     private var apps: [InstalledApp] {
-        MockData.apps
+        app.apps
             .filter { item in
                 (search.isEmpty || item.name.localizedCaseInsensitiveContains(search))
                     && matchesFilter(item)
@@ -35,7 +35,7 @@ struct ApplicationsView: View {
     }
 
     private var selectedApp: InstalledApp? {
-        MockData.apps.first { $0.id == selection }
+        app.apps.first { $0.id == selection }
     }
 
     var body: some View {

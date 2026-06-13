@@ -9,7 +9,7 @@ struct MenuBarView: View {
     @Environment(AppState.self) private var app
     @Environment(\.openWindow) private var openWindow
 
-    private let metrics = MockData.liveMetrics()
+    private var metrics: [LiveMetric] { app.metrics }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {

@@ -15,7 +15,7 @@ struct OptimizeView: View {
     enum Mode: String, CaseIterable, Identifiable { case safe = "Safe", advanced = "Advanced"; var id: String { rawValue } }
 
     private var tasks: [OptimizeTask] {
-        MockData.optimizeTasks.filter { mode == .advanced || $0.safety != .advanced }
+        app.optimizeTasks.filter { mode == .advanced || $0.safety != .advanced }
     }
 
     var body: some View {
@@ -37,7 +37,7 @@ struct OptimizeView: View {
                     .padding(.bottom, Spacing.xl)
             }
         }
-        .onAppear { selected = Set(MockData.optimizeTasks.filter(\.isRecommended).map(\.id)) }
+        .onAppear { selected = Set(app.optimizeTasks.filter(\.isRecommended).map(\.id)) }
     }
 
     private var center: some View {
@@ -57,7 +57,7 @@ struct OptimizeView: View {
                 Text("Run recommended maintenance to keep your Mac fast and your indexes fresh. Advanced tasks are available behind a toggle.")
                     .nebulaCaptionStyle().fixedSize(horizontal: false, vertical: true)
                 Button {
-                    selected = Set(MockData.optimizeTasks.filter(\.isRecommended).map(\.id)); run()
+                    selected = Set(app.optimizeTasks.filter(\.isRecommended).map(\.id)); run()
                 } label: { Label("Run recommended", systemImage: "play.fill") }
                     .buttonStyle(.borderedProminent).controlSize(.large).tint(.nebulaAccent)
                     .disabled(running)

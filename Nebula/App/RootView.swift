@@ -34,12 +34,21 @@ struct RootView: View {
                 .navigationTitle(app.destination.title)
                 .navigationSubtitle(app.destination.subtitle)
                 .toolbar { globalToolbar }
+                .task { if !app.isLive { app.refreshAll() } }
         }
         .navigationSplitViewStyle(.balanced)
         .overlay(alignment: .top) { paletteOverlay }
     }
 
     @ToolbarContentBuilder private var globalToolbar: some ToolbarContent {
+        ToolbarItem(placement: .primaryAction) {
+            Button { app.refreshAll() } label: {
+                Image(systemName: "arrow.clockwise")
+                    .symbolEffect(.rotate, isActive: app.isLoadingData)
+            }
+            .help(app.isLoadingData ? "Refreshing…" : "Refresh live data")
+            .disabled(app.isLoadingData)
+        }
         ToolbarItem(placement: .primaryAction) {
             Button { withAnimation(Motion.snappy) { app.showCommandPalette = true } } label: {
                 Image(systemName: "magnifyingglass")

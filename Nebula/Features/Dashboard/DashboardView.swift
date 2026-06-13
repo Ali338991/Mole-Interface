@@ -13,6 +13,21 @@ struct DashboardView: View {
         switch h { case 5..<12: return "Good morning"; case 12..<17: return "Good afternoon"; default: return "Good evening" }
     }
 
+    // Derived live values
+    private var freePct: Int {
+        app.totalDiskBytes > 0 ? Int(Double(app.freeDiskBytes) / Double(app.totalDiskBytes) * 100) : 0
+    }
+    private var safeCleanBytes: Int64 {
+        app.cleanCategories.filter { $0.safety == .safe }.reduce(0) { $0 + $1.bytes }
+    }
+    private var staleProjectCount: Int {
+        app.devGroups.flatMap(\.projects).filter(\.isStale).count
+    }
+    private var updateNames: String {
+        let names = app.apps.filter(\.hasUpdate).map(\.name)
+        return names.isEmpty ? "All apps up to date" : names.prefix(3).joined(separator: " · ")
+    }
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.lg) {
@@ -52,8 +67,8 @@ struct DashboardView: View {
                     .font(.nebulaBody).foregroundStyle(.nebulaText2)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: Spacing.xl) {
-                    heroStat("59.7 GB", "Reclaimable")
-                    heroStat("3", "Maintenance tasks")
+                    heroStat(ByteFormat.string(app.reclaimableBytes), "Reclaimable")
+                    heroStat("\(app.optimizeTasks.filter(\.isRecommended).count)", "Maintenance tasks")
                     heroStat("\(app.appsWithUpdates)", "App updates")
                 }
                 .padding(.top, Spacing.sm)
@@ -75,15 +90,18 @@ struct DashboardView: View {
     private var kpiRow: some View {
         HStack(spacing: Spacing.lg) {
             KpiCard(icon: "internaldrive", tint: .nebulaInfo, label: "Free space",
-                    value: "282", unit: "GB", foot: "28% of 994.7 GB free", footTint: .nebulaSuccess) {
+                    value: ByteFormat.string(app.freeDiskBytes), unit: "",
+                    foot: "\(freePct)% of \(ByteFormat.string(app.totalDiskBytes)) free", footTint: .nebulaSuccess) {
                 app.navigate(to: .diskAnalyzer)
             }
             KpiCard(icon: "sparkles", tint: .nebulaAccent, label: "Reclaimable",
-                    value: "59.7", unit: "GB", foot: "Across 8 categories", footTint: .nebulaText3) {
+                    value: ByteFormat.string(app.reclaimableBytes), unit: "",
+                    foot: "Across \(app.cleanCategories.count) categories", footTint: .nebulaText3) {
                 app.navigate(to: .smartClean)
             }
             KpiCard(icon: "arrow.down.circle", tint: .nebulaSuccess, label: "App updates",
-                    value: "3", unit: "apps", foot: "Figma · Docker · Rectangle", footTint: .nebulaText3) {
+                    value: "\(app.appsWithUpdates)", unit: app.appsWithUpdates == 1 ? "app" : "apps",
+                    foot: updateNames, footTint: .nebulaText3) {
                 app.navigate(to: .applications)
             }
         }
@@ -95,16 +113,16 @@ struct DashboardView: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             sectionHead("Recommended", hint: "Tailored to your Mac")
             HStack(spacing: Spacing.lg) {
-                RecCard(icon: "sparkles", tint: .nebulaAccent, title: "Free up 21.4 GB",
-                        desc: "Caches, logs, and Xcode junk are safe to remove.", cta: "Review & clean") {
+                RecCard(icon: "sparkles", tint: .nebulaAccent, title: "Free up \(ByteFormat.string(safeCleanBytes))",
+                        desc: "Caches, logs, and other safe-to-remove junk.", cta: "Review & clean") {
                     app.navigate(to: .smartClean)
                 }
-                RecCard(icon: "hammer", tint: .nebulaSuccess, title: "Reclaim 38.2 GB of build artifacts",
-                        desc: "14 stale projects with node_modules & DerivedData.", cta: "Open Developer Cleanup") {
+                RecCard(icon: "hammer", tint: .nebulaSuccess, title: "Reclaim \(ByteFormat.string(app.devTotalBytes)) of build artifacts",
+                        desc: "\(staleProjectCount) stale projects with node_modules & build caches.", cta: "Open Developer Cleanup") {
                     app.navigate(to: .developerCleanup)
                 }
-                RecCard(icon: "arrow.down.circle", tint: .nebulaInfo, title: "3 app updates available",
-                        desc: "Figma, Docker Desktop, and Rectangle.", cta: "View applications") {
+                RecCard(icon: "arrow.down.circle", tint: .nebulaInfo, title: "\(app.appsWithUpdates) app updates available",
+                        desc: updateNames, cta: "View applications") {
                     app.navigate(to: .applications)
                 }
             }
@@ -116,7 +134,7 @@ struct DashboardView: View {
     private var glance: some View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack(alignment: .firstTextBaseline) {
-                sectionHead("At a glance", hint: "How your 994.7 GB disk is used")
+                sectionHead("At a glance", hint: "How your \(ByteFormat.string(app.totalDiskBytes)) disk is used")
                 Spacer()
                 Button("Open Disk Analyzer →") { app.navigate(to: .diskAnalyzer) }
                     .buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).foregroundStyle(.nebulaAccent)
@@ -132,7 +150,7 @@ struct DashboardView: View {
                     Text("\(ByteFormat.string(app.freeDiskBytes)) available")
                         .font(.nebulaBody).foregroundStyle(.nebulaText2).nebulaNumeric()
                 }
-                StorageBar(segments: MockData.storageBreakdown, freeBytes: app.freeDiskBytes)
+                StorageBar(segments: app.storageBreakdown, freeBytes: app.freeDiskBytes)
             }
             .glassCard(padding: Spacing.xl)
         }

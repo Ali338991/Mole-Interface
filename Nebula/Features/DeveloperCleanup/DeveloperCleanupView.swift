@@ -6,11 +6,12 @@
 import SwiftUI
 
 struct DeveloperCleanupView: View {
+    @Environment(AppState.self) private var app
     @State private var selected: Set<UUID> = []
     @State private var staleOnly = false
     @State private var showConfirm = false
 
-    private var groups: [DevArtifactGroup] { MockData.devGroups }
+    private var groups: [DevArtifactGroup] { app.devGroups }
 
     private var selectedBytes: Int64 {
         groups.flatMap(\.projects).filter { selected.contains($0.id) }.reduce(0) { $0 + $1.bytes }
@@ -53,7 +54,7 @@ struct DeveloperCleanupView: View {
     private var header: some View {
         HStack(spacing: Spacing.lg) {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
-                Text(ByteFormat.string(MockData.devTotalBytes)).font(.nebulaHero).nebulaNumeric()
+                Text(ByteFormat.string(app.devTotalBytes)).font(.nebulaHero).nebulaNumeric()
                 Text("in regenerable build artifacts across your projects").nebulaCaptionStyle()
             }
             Spacer()

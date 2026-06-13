@@ -1,24 +1,25 @@
 //
 //  SystemMonitorView.swift
-//  Nebula — beautiful live monitoring (mo status), not boring graphs.
+//  Mole — live monitoring backed by the engine (`mo status --json`).
 //
 
 import SwiftUI
 import Charts
 
 struct SystemMonitorView: View {
-    @State private var metrics: [LiveMetric] = MockData.liveMetrics()
+    @Environment(AppState.self) private var app
     @State private var expanded: MetricKind?
     @State private var paused = false
     @State private var timescale: Timescale = .minute
 
-    // INTEGRATION: replace this demo timer with a real sampler reading
-    // `mo status --json` or system APIs.
-    private let tick = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    // Polls the Mole engine for live CPU / memory / disk / health.
+    private let tick = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
     enum Timescale: String, CaseIterable, Identifiable {
         case minute = "1m", hour = "1h", day = "24h"; var id: String { rawValue }
     }
+
+    private var metrics: [LiveMetric] { app.metrics }
 
     var body: some View {
         ScrollView {
@@ -47,7 +48,7 @@ struct SystemMonitorView: View {
                 }
             }
         }
-        .onReceive(tick) { _ in if !paused { advance() } }
+        .onReceive(tick) { _ in if !paused { app.refreshMetrics() } }
     }
 
     private var grid: some View {
@@ -97,7 +98,7 @@ struct SystemMonitorView: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             SectionHeader("Process insights", subtitle: "Top consumers right now")
             VStack(spacing: Spacing.sm) {
-                ForEach(MockData.processes) { p in
+                ForEach(app.processes) { p in
                     HStack(spacing: Spacing.md) {
                         Text(p.name).font(.nebulaCallout).frame(width: 200, alignment: .leading)
                         ProgressView(value: min(p.cpu, 200), total: 200).tint(.nebulaAccent)
@@ -115,8 +116,7 @@ struct SystemMonitorView: View {
     private func formatted(_ m: LiveMetric) -> String {
         switch m.kind {
         case .fans: "\(Int(m.current)) \(m.kind.unit)"
-        case .temperature: "\(Int(m.current))\(m.kind.unit)"
-        default: "\(Int(m.current))\(m.kind.unit)"
+        default:    "\(Int(m.current))\(m.kind.unit)"
         }
     }
 
@@ -126,26 +126,6 @@ struct SystemMonitorView: View {
         case .temperature: 30...90
         case .fans: 0...5000
         default: 0...max(120, (m.history.map(\.value).max() ?? 100) * 1.2)
-        }
-    }
-
-    private func advance() {
-        for i in metrics.indices {
-            let spread: Double = metrics[i].kind == .fans ? 200 : 12
-            let next = max(0, metrics[i].current + Double.random(in: -spread...spread))
-            let capped = clamp(next, for: metrics[i].kind)
-            metrics[i].current = capped
-            metrics[i].history.append(MetricSample(time: Date(), value: capped))
-            if metrics[i].history.count > 60 { metrics[i].history.removeFirst() }
-        }
-    }
-
-    private func clamp(_ v: Double, for kind: MetricKind) -> Double {
-        switch kind {
-        case .cpu, .gpu, .memory, .battery: min(100, v)
-        case .temperature: min(95, max(30, v))
-        case .fans: min(5000, max(0, v))
-        default: v
         }
     }
 }
